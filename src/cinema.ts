@@ -4,17 +4,6 @@
 type Seat = 0 | 1;
 type SeatMatrix = Seat[][];
 
-interface ReservationResult {
-  success: boolean;
-  message: string;
-}
-
-interface AdjacentSeatsResult {
-  found: boolean;
-  seats: Array<[number, number]> | null;
-  message: string;
-}
-
 /**
  * Initialize the cinema with 8 rows and 10 columns
  * All seats start as available (0)
@@ -53,41 +42,30 @@ export function displayCinema(cinema: SeatMatrix): void {
 
 /**
  * Reserve a seat at specified row and column
+ * Returns: message string (success or error message)
  */
 export function reserveSeat(
   cinema: SeatMatrix,
   row: number,
   column: number
-): ReservationResult {
+): string {
   // Validate row and column exist
   if (row < 0 || row >= cinema.length) {
-    return {
-      success: false,
-      message: `❌ Error: Row ${row} does not exist. Valid rows: 0-${cinema.length - 1}`,
-    };
+    return `❌ Error: Row ${row} does not exist. Valid rows: 0-${cinema.length - 1}`;
   }
 
   if (column < 0 || column >= cinema[row].length) {
-    return {
-      success: false,
-      message: `❌ Error: Column ${column} does not exist. Valid columns: 0-${cinema[row].length - 1}`,
-    };
+    return `❌ Error: Column ${column} does not exist. Valid columns: 0-${cinema[row].length - 1}`;
   }
 
   // Check if seat is already occupied
   if (cinema[row][column] === 1) {
-    return {
-      success: false,
-      message: `❌ Error: Seat at row ${row}, column ${column} is already occupied.`,
-    };
+    return `❌ Error: Seat at row ${row}, column ${column} is already occupied.`;
   }
 
   // Reserve the seat
   cinema[row][column] = 1;
-  return {
-    success: true,
-    message: `✅ Seat successfully reserved at row ${row}, column ${column}.`,
-  };
+  return `✅ Seat successfully reserved at row ${row}, column ${column}.`;
 }
 
 /**
@@ -122,48 +100,29 @@ export function countOccupiedSeats(cinema: SeatMatrix): number {
 
 /**
  * Find two adjacent available seats in the same row
+ * Returns: tuple [found: boolean, positions: [row, col1, col2] | null]
  */
-export function findAdjacentSeats(cinema: SeatMatrix): AdjacentSeatsResult {
+export function findAdjacentSeats(cinema: SeatMatrix): [boolean, [number, number, number] | null] {
   for (let row = 0; row < cinema.length; row++) {
     for (let col = 0; col < cinema[row].length - 1; col++) {
       if (cinema[row][col] === 0 && cinema[row][col + 1] === 0) {
-        return {
-          found: true,
-          seats: [
-            [row, col],
-            [row, col + 1],
-          ],
-          message: `✅ Found 2 adjacent seats at row ${row}, columns ${col}-${col + 1}`,
-        };
+        return [true, [row, col, col + 1]];
       }
     }
   }
 
-  return {
-    found: false,
-    seats: null,
-    message: "❌ No adjacent seats found.",
-  };
+  return [false, null];
 }
 
 /**
- * Get cinema statistics
+ * Get cinema statistics as tuple
+ * Returns: [totalSeats, availableSeats, occupiedSeats, occupancyPercentage]
  */
-export function getCinemaStats(cinema: SeatMatrix): {
-  totalSeats: number;
-  availableSeats: number;
-  occupiedSeats: number;
-  occupancyPercentage: number;
-} {
+export function getCinemaStats(cinema: SeatMatrix): [number, number, number, number] {
   const totalSeats = cinema.length * cinema[0].length;
   const availableSeats = countAvailableSeats(cinema);
   const occupiedSeats = countOccupiedSeats(cinema);
-  const occupancyPercentage = (occupiedSeats / totalSeats) * 100;
+  const occupancyPercentage = Math.round(((occupiedSeats / totalSeats) * 100) * 100) / 100;
 
-  return {
-    totalSeats,
-    availableSeats,
-    occupiedSeats,
-    occupancyPercentage: Math.round(occupancyPercentage * 100) / 100,
-  };
+  return [totalSeats, availableSeats, occupiedSeats, occupancyPercentage];
 }

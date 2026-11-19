@@ -23,24 +23,32 @@ function runTests(): void {
   displayCinema(cinema1);
   console.log(`Available seats: ${countAvailableSeats(cinema1)}`);
   console.log(`Occupied seats: ${countOccupiedSeats(cinema1)}`);
-  const result1 = findAdjacentSeats(cinema1);
-  console.log(result1.message);
+  const [found1, positions1] = findAdjacentSeats(cinema1);
+  if (found1 && positions1) {
+    console.log(`✅ Found 2 adjacent seats at row ${positions1[0]}, columns ${positions1[1]}-${positions1[2]}`);
+  } else {
+    console.log("❌ No adjacent seats found.");
+  }
   console.log();
 
   // TEST 2: Partially occupied cinema
   console.log("📌 TEST 2: Partially Occupied Cinema");
   console.log("─".repeat(50));
   const cinema2 = initializeCinema();
-  reserveSeat(cinema2, 0, 0);
-  reserveSeat(cinema2, 0, 1);
-  reserveSeat(cinema2, 1, 5);
-  reserveSeat(cinema2, 3, 8);
-  reserveSeat(cinema2, 7, 0);
+  console.log(reserveSeat(cinema2, 0, 0));
+  console.log(reserveSeat(cinema2, 0, 1));
+  console.log(reserveSeat(cinema2, 1, 5));
+  console.log(reserveSeat(cinema2, 3, 8));
+  console.log(reserveSeat(cinema2, 7, 0));
   displayCinema(cinema2);
   console.log(`Available seats: ${countAvailableSeats(cinema2)}`);
   console.log(`Occupied seats: ${countOccupiedSeats(cinema2)}`);
-  const result2 = findAdjacentSeats(cinema2);
-  console.log(result2.message);
+  const [found2, positions2] = findAdjacentSeats(cinema2);
+  if (found2 && positions2) {
+    console.log(`✅ Found 2 adjacent seats at row ${positions2[0]}, columns ${positions2[1]}-${positions2[2]}`);
+  } else {
+    console.log("❌ No adjacent seats found.");
+  }
   console.log();
 
   // TEST 3: Reserve a free seat
@@ -48,7 +56,7 @@ function runTests(): void {
   console.log("─".repeat(50));
   const cinema3 = initializeCinema();
   const res3a = reserveSeat(cinema3, 2, 4);
-  console.log(res3a.message);
+  console.log(res3a);
   displayCinema(cinema3);
   console.log();
 
@@ -57,9 +65,9 @@ function runTests(): void {
   console.log("─".repeat(50));
   const cinema4 = initializeCinema();
   const res4a = reserveSeat(cinema4, 2, 4);
-  console.log(res4a.message);
+  console.log(res4a);
   const res4b = reserveSeat(cinema4, 2, 4);
-  console.log(res4b.message);
+  console.log(res4b);
   displayCinema(cinema4);
   console.log();
 
@@ -68,11 +76,11 @@ function runTests(): void {
   console.log("─".repeat(50));
   const cinema5 = initializeCinema();
   const res5a = reserveSeat(cinema5, 10, 5);
-  console.log(res5a.message);
+  console.log(res5a);
   const res5b = reserveSeat(cinema5, 2, 15);
-  console.log(res5b.message);
+  console.log(res5b);
   const res5c = reserveSeat(cinema5, -1, 2);
-  console.log(res5c.message);
+  console.log(res5c);
   console.log();
 
   // TEST 6: Search for two adjacent seats
@@ -84,12 +92,14 @@ function runTests(): void {
   reserveSeat(cinema6, 0, 2);
   reserveSeat(cinema6, 0, 3);
   displayCinema(cinema6);
-  const result6 = findAdjacentSeats(cinema6);
-  console.log(result6.message);
-  if (result6.found && result6.seats) {
+  const [found6, positions6] = findAdjacentSeats(cinema6);
+  if (found6 && positions6) {
+    console.log(`✅ Found 2 adjacent seats at row ${positions6[0]}, columns ${positions6[1]}-${positions6[2]}`);
     console.log(
-      `Seat positions: [${result6.seats[0][0]}, ${result6.seats[0][1]}] and [${result6.seats[1][0]}, ${result6.seats[1][1]}]`
+      `Seat positions: [${positions6[0]}, ${positions6[1]}] and [${positions6[0]}, ${positions6[2]}]`
     );
+  } else {
+    console.log("❌ No adjacent seats found.");
   }
   console.log();
 
@@ -111,8 +121,12 @@ function runTests(): void {
   displayCinema(cinema7);
   console.log(`Available seats: ${countAvailableSeats(cinema7)}`);
   console.log(`Occupied seats: ${countOccupiedSeats(cinema7)}`);
-  const result7 = findAdjacentSeats(cinema7);
-  console.log(result7.message);
+  const [found7, positions7] = findAdjacentSeats(cinema7);
+  if (found7 && positions7) {
+    console.log(`✅ Found 2 adjacent seats at row ${positions7[0]}, columns ${positions7[1]}-${positions7[2]}`);
+  } else {
+    console.log("❌ No adjacent seats found.");
+  }
   console.log();
 
   // TEST 8: Completely full cinema
@@ -127,8 +141,12 @@ function runTests(): void {
   displayCinema(cinema8);
   console.log(`Available seats: ${countAvailableSeats(cinema8)}`);
   console.log(`Occupied seats: ${countOccupiedSeats(cinema8)}`);
-  const result8 = findAdjacentSeats(cinema8);
-  console.log(result8.message);
+  const [found8, positions8] = findAdjacentSeats(cinema8);
+  if (found8 && positions8) {
+    console.log(`✅ Found 2 adjacent seats at row ${positions8[0]}, columns ${positions8[1]}-${positions8[2]}`);
+  } else {
+    console.log("❌ No adjacent seats found.");
+  }
   console.log();
 
   // TEST 9: Verify counters are correct
@@ -150,20 +168,20 @@ function runTests(): void {
     reserveSeat(cinema9, row, col);
   });
 
-  const stats = getCinemaStats(cinema9);
-  console.log(`Total seats: ${stats.totalSeats}`);
-  console.log(`Available seats: ${stats.availableSeats}`);
-  console.log(`Occupied seats: ${stats.occupiedSeats}`);
-  console.log(`Occupancy: ${stats.occupancyPercentage}%`);
+  const [totalSeats, availableSeats, occupiedSeats, occupancyPercentage] = getCinemaStats(cinema9);
+  console.log(`Total seats: ${totalSeats}`);
+  console.log(`Available seats: ${availableSeats}`);
+  console.log(`Occupied seats: ${occupiedSeats}`);
+  console.log(`Occupancy: ${occupancyPercentage}%`);
 
   // Manual verification
   const manualAvailable = countAvailableSeats(cinema9);
   const manualOccupied = countOccupiedSeats(cinema9);
   console.log(
-    `\nCounter Verification: ${manualAvailable === stats.availableSeats ? "✅ PASS" : "❌ FAIL"}`
+    `\nCounter Verification: ${manualAvailable === availableSeats ? "✅ PASS" : "❌ FAIL"}`
   );
   console.log(
-    `Total Verification: ${manualAvailable + manualOccupied === stats.totalSeats ? "✅ PASS" : "❌ FAIL"}`
+    `Total Verification: ${manualAvailable + manualOccupied === totalSeats ? "✅ PASS" : "❌ FAIL"}`
   );
   console.log();
 
@@ -211,19 +229,19 @@ function runTests(): void {
 
   // Top-left corner
   const res12a = reserveSeat(cinema12, 0, 0);
-  console.log(`Top-left (0,0): ${res12a.message}`);
+  console.log(`Top-left (0,0): ${res12a}`);
 
   // Top-right corner
   const res12b = reserveSeat(cinema12, 0, 9);
-  console.log(`Top-right (0,9): ${res12b.message}`);
+  console.log(`Top-right (0,9): ${res12b}`);
 
   // Bottom-left corner
   const res12c = reserveSeat(cinema12, 7, 0);
-  console.log(`Bottom-left (7,0): ${res12c.message}`);
+  console.log(`Bottom-left (7,0): ${res12c}`);
 
   // Bottom-right corner
   const res12d = reserveSeat(cinema12, 7, 9);
-  console.log(`Bottom-right (7,9): ${res12d.message}`);
+  console.log(`Bottom-right (7,9): ${res12d}`);
 
   displayCinema(cinema12);
   console.log();
