@@ -66,12 +66,27 @@ function keyToCoords(key: string): [number, number] {
     return [r, c];
 }
 
-// Render all seats
+// Render all seats by row
 function renderSeats(): void {
     const seatsGrid = document.getElementById('seatsGrid') as HTMLDivElement;
     seatsGrid.innerHTML = '';
 
     for (let row = 0; row < 8; row++) {
+        // Create row container
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'seat-row';
+
+        // Create row label
+        const rowLabel = document.createElement('div');
+        rowLabel.className = 'row-label';
+        rowLabel.textContent = String.fromCharCode(65 + row); // A-H
+        rowDiv.appendChild(rowLabel);
+
+        // Create seats container for this row
+        const rowSeatsDiv = document.createElement('div');
+        rowSeatsDiv.className = 'row-seats';
+
+        // Add all seats for this row
         for (let col = 0; col < 10; col++) {
             const seatBtn = document.createElement('button');
             const isOccupied = cinema[row][col] === 1;
@@ -112,8 +127,11 @@ function renderSeats(): void {
                 seatBtn.classList.add('recommended');
             }
 
-            seatsGrid.appendChild(seatBtn);
+            rowSeatsDiv.appendChild(seatBtn);
         }
+
+        rowDiv.appendChild(rowSeatsDiv);
+        seatsGrid.appendChild(rowDiv);
     }
 }
 
