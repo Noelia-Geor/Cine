@@ -10,8 +10,7 @@ import {
 
 // Global cinema state
 let cinema: Seat[][];
-let selectedRow: number | null = null;
-let selectedCol: number | null = null;
+let selectedSeats: Set<string> = new Set(); // Format: "row,col"
 let recommendedSeats: [number, number, number, number] | null = null;
 
 // Initial occupancy pattern (creates ~25% occupancy)
@@ -61,6 +60,12 @@ function saveCinemaState(): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cinema));
 }
 
+// Convert key to [row, col]
+function keyToCoords(key: string): [number, number] {
+    const [r, c] = key.split(',').map(Number);
+    return [r, c];
+}
+
 // Render all seats
 function renderSeats(): void {
     const seatsGrid = document.getElementById('seatsGrid') as HTMLDivElement;
@@ -70,10 +75,10 @@ function renderSeats(): void {
         for (let col = 0; col < 10; col++) {
             const seatBtn = document.createElement('button');
             const isOccupied = cinema[row][col] === 1;
-            const isSelected = row === selectedRow && col === selectedCol;
+            const key = `${row},${col}`;
+            const isSelected = selectedSeats.has(key);
             const isRecommended = recommendedSeats && 
-                (recommendedSeats[2] === row && recommendedSeats[3] === col ||
-                 recommendedSeats[2] === row && recommendedSeats[3] + 1 === col);
+                (recommendedSeats[2] === row && (recommendedSeats[3] === col || recommendedSeats[3] + 1 === col));
 
             seatBtn.className = 'seat';
             seatBtn.textContent = `${col + 1}`;
@@ -88,7 +93,7 @@ function renderSeats(): void {
                 seatBtn.setAttribute('aria-label', 
                     `Fila ${String.fromCharCode(65 + row)}, asiento ${col + 1}, disponible`);
                 
-                seatBtn.addEventListener('click', () => selectSeat(row, col));
+                seatBtn.addEventListener('click', () => toggleSeat(row, col));
                 seatBtn.addEventListener('mouseover', () => {
                     if (!isSelected && !isOccupied) {
                         seatBtn.style.opacity = '0.9';
@@ -112,20 +117,25 @@ function renderSeats(): void {
     }
 }
 
-// Select a seat
-function selectSeat(row: number, col: number): void {
+// Toggle seat selection
+function toggleSeat(row: number, col: number): void {
     // If seat is occupied, show message
     if (cinema[row][col] === 1) {
         showResultMessage('Este asiento ya está ocupado.', 'error');
         return;
     }
 
+    const key = `${row},${col}`;
+    
     // Clear previous recommendation
     recommendedSeats = null;
 
-    // Update selection
-    selectedRow = row;
-    selectedCol = col;
+    // Toggle selection
+    if (selectedSeats.has(key)) {
+        selectedSeats.delete(key);
+    } else {
+        selectedSeats.add(key);
+    }
 
     // Update UI
     updateSelection();
@@ -136,21 +146,24 @@ function selectSeat(row: number, col: number): void {
 function updateSelection(): void {
     const selectionBox = document.getElementById('selectionBox') as HTMLDivElement;
     const selectionDetails = document.getElementById('selectionDetails') as HTMLDivElement;
-    const detailRow = document.getElementById('detailRow') as HTMLSpanElement;
-    const detailSeat = document.getElementById('detailSeat') as HTMLSpanElement;
-    const detailStatus = document.getElementById('detailStatus') as HTMLSpanElement;
     const reserveBtn = document.getElementById('reserveBtn') as HTMLButtonElement;
 
-    if (selectedRow !== null && selectedCol !== null) {
-        const rowLetter = String.fromCharCode(65 + selectedRow);
-        const seatNum = selectedCol + 1;
+    if (selectedSeats.size > 0) {
+        const seatsList = Array.from(selectedSeats)
+            .sort()
+            .map(key => {
+                const [row, col] = keyToCoords(key);
+                return `Fila ${String.fromCharCode(65 + row)} - Asiento ${col + 1}`;
+            })
+            .join(' | ');
 
-        detailRow.textContent = rowLetter;
-        detailSeat.textContent = `${seatNum}`;
-        detailStatus.textContent = 'Disponible';
+        selectionDetails.innerHTML = `<div style="text-align: center; padding: 12px; background: rgba(212, 175, 55, 0.05); border-left: 3px solid var(--color-primary); border-radius: 8px;">
+            <div style="font-size: 0.8rem; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">Asientos seleccionados (${selectedSeats.size})</div>
+            <div style="font-size: 0.85rem; color: var(--color-primary); font-weight: 600;">${seatsList}</div>
+        </div>`;
 
         selectionBox.style.display = 'none';
-        selectionDetails.style.display = 'flex';
+        selectionDetails.style.display = 'block';
         reserveBtn.disabled = false;
     } else {
         selectionBox.style.display = 'flex';
@@ -159,31 +172,54 @@ function updateSelection(): void {
     }
 }
 
-// Reserve selected seat
+// Reserve all selected seats
 function reserveSelected(): void {
-    if (selectedRow === null || selectedCol === null) {
-        showResultMessage('Selecciona un asiento primero.', 'error');
+    if (selectedSeats.size === 0) {
+        showResultMessage('Selecciona al menos un asiento.', 'error');
         return;
     }
 
-    const result = reserveSeat(cinema, selectedRow, selectedCol);
+    const seatsArray = Array.from(selectedSeats).map(key => keyToCoords(key));
+    const reservedSeats: string[] = [];
+    const failedSeats: string[] = [];
 
-    if (result === 'success') {
+    for (const [row, col] of seatsArray) {
+        const result = reserveSeat(cinema, row, col);
+        const rowLetter = String.fromCharCode(65 + row);
+        
+        if (result === 'success') {
+            reservedSeats.push(`Fila ${rowLetter} - Asiento ${col + 1}`);
+        } else {
+            failedSeats.push(`Fila ${rowLetter} - Asiento ${col + 1}`);
+        }
+    }
+
+    // Clear selection
+    selectedSeats.clear();
+    recommendedSeats = null;
+
+    // Update state and UI
+    saveCinemaState();
+    updateSelection();
+    renderSeats();
+    updateStats();
+
+    // Show results
+    if (reservedSeats.length > 0 && failedSeats.length === 0) {
         showResultMessage(
-            `Reserva confirmada · Fila ${String.fromCharCode(65 + selectedRow)} · Asiento ${selectedCol + 1}`,
+            `✅ Reserva confirmada · ${reservedSeats.length} asiento(s)`,
             'success'
         );
-        saveCinemaState();
-        selectedRow = null;
-        selectedCol = null;
-        recommendedSeats = null;
-        updateSelection();
-        renderSeats();
-        updateStats();
-    } else if (result === 'occupied') {
-        showResultMessage('Este asiento ya está ocupado.', 'error');
+    } else if (reservedSeats.length > 0 && failedSeats.length > 0) {
+        showResultMessage(
+            `⚠️ ${reservedSeats.length} reservado(s) · ${failedSeats.length} falló`,
+            'info'
+        );
     } else {
-        showResultMessage('Posición inválida.', 'error');
+        showResultMessage(
+            `❌ No se pudieron reservar los asientos.`,
+            'error'
+        );
     }
 }
 
@@ -196,12 +232,18 @@ function findAdjacent(): void {
         const rowLetter = String.fromCharCode(65 + row);
         
         recommendedSeats = [row, row, row, col1]; // Store for rendering
+        
+        // Auto-select the recommended seats
+        selectedSeats.clear();
+        selectedSeats.add(`${row},${col1}`);
+        selectedSeats.add(`${row},${col2}`);
 
         showResultMessage(
             `Encontramos 2 asientos juntos · Fila ${rowLetter} · Asientos ${col1 + 1} y ${col2 + 1}`,
             'info'
         );
 
+        updateSelection();
         renderSeats();
     } else {
         showResultMessage('No quedan dos asientos contiguos disponibles.', 'error');
@@ -244,8 +286,7 @@ function resetCinema(): void {
     }
 
     saveCinemaState();
-    selectedRow = null;
-    selectedCol = null;
+    selectedSeats.clear();
     recommendedSeats = null;
     
     updateSelection();
