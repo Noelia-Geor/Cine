@@ -5,9 +5,10 @@
   "main": "dist/main.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && vite build",
     "start": "node dist/main.js",
     "dev": "tsc && node dist/main.js",
+    "web": "vite",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -19,6 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vite": "^8.3.8"
   }
 }

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema Seat Manager</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">Cinema Seat Manager</h1>
+                <p class="app-subtitle">Selecciona tu butaca</p>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- Left: Cinema hall -->
+            <div class="cinema-section">
+                <!-- Stats bar -->
+                <div class="stats-bar">
+                    <span class="stat-item">
+                        <strong>80</strong> asientos
+                    </span>
+                    <span class="stat-separator">·</span>
+                    <span class="stat-item">
+                        <strong id="availableCount">80</strong> libres
+                    </span>
+                    <span class="stat-separator">·</span>
+                    <span class="stat-item">
+                        <strong id="occupiedCount">0</strong> ocupados
+                    </span>
+                </div>
+
+                <!-- Screen -->
+                <div class="screen-container">
+                    <div class="screen">
+                        <span class="screen-label">PANTALLA</span>
+                    </div>
+                </div>
+
+                <!-- Cinema hall with seats -->
+                <div class="hall-container">
+                    <div class="seats-wrapper">
+                        <div class="row-labels">
+                            <div class="row-label">A</div>
+                            <div class="row-label">B</div>
+                            <div class="row-label">C</div>
+                            <div class="row-label">D</div>
+                            <div class="row-label">E</div>
+                            <div class="row-label">F</div>
+                            <div class="row-label">G</div>
+                            <div class="row-label">H</div>
+                        </div>
+                        <div class="seats-grid" id="seatsGrid"></div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-dot available"></span>
+                        Disponible
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot occupied"></span>
+                        Ocupado
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot selected"></span>
+                        Seleccionado
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot recommended"></span>
+                        Recomendado
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Reservation panel -->
+            <aside class="reservation-panel">
+                <div class="panel-content">
+                    <h2 class="panel-title">Tu Selección</h2>
+                    
+                    <div class="selection-box" id="selectionBox">
+                        <p class="empty-state">Selecciona una butaca en la sala</p>
+                    </div>
+
+                    <div class="selection-details" id="selectionDetails" style="display: none;">
+                        <div class="detail-row">
+                            <span class="detail-label">Fila</span>
+                            <span class="detail-value" id="detailRow">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Asiento</span>
+                            <span class="detail-value" id="detailSeat">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Estado</span>
+                            <span class="detail-value" id="detailStatus">-</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="reserveBtn" disabled>
+                        Reservar asiento
+                    </button>
+
+                    <button class="btn btn-secondary" id="findAdjacent">
+                        Encontrar 2 asientos juntos
+                    </button>
+
+                    <div class="result-message" id="resultMessage"></div>
+
+                    <button class="btn btn-tertiary" id="resetBtn">
+                        Reiniciar sala
+                    </button>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Confirmation modal (for reset) -->
+        <div class="modal" id="confirmModal">
+            <div class="modal-content">
+                <h3>Reiniciar sala</h3>
+                <p>¿Está seguro? Se perderán todas las reservas actuales.</p>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" id="confirmCancel">Cancelar</button>
+                    <button class="btn btn-primary" id="confirmReset">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./web.ts"></script>
+</body>
+</html>

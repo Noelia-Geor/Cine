@@ -1,7 +1,7 @@
 /**
  * Type definitions for the Cinema Seat Manager
  */
-type Seat = 0 | 1;
+export type Seat = 0 | 1;
 type SeatMatrix = Seat[][];
 
 /**
